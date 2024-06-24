@@ -364,4 +364,9 @@ def main(args):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print()
+        print(f"USAGE {pathlib.Path(sys.argv[0])} <profile folder>")
+        print()
+        exit(1)
     main(sys.argv[1:])
