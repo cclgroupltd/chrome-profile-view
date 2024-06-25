@@ -22,7 +22,7 @@
                     }
                 }
 
-                return lines.join("<br>");
+                return lines.join("\n");
             }
 
             function makePreviewImage(record){
@@ -37,17 +37,18 @@
                     if(data["success"]){
                         tablebody.append(
                             data["results"].map(x =>
-                                `<tr data-rawkey="${x["key"]["raw"]}" data-keyidx="${x["key"]["key_index"]}">
-                                    <td><a href="/cache-resource?key=${encodeURIComponent(x["key"]["raw"])}&idx=${encodeURIComponent(x["key"]["key_index"])}">💾</a></td>
-                                    <td style="max-width: 50vw; word-wrap: break-word;">${x["key"]["url"]}</td>
-                                    <td>${x["key"]["site"]}</td>
-                                    <td>${x["metadata"]["request_time"]}</td>
-                                    <td>${x["metadata"]["response_time"]}</td>
-                                    <td>${x["metadata"]["metadata_location"]}</td>
-                                    <td>${x["metadata"]["data_location"]}</td>
-                                    <td style="font-size: 0.7rem; max-width: 50vw; word-wrap: break-word;">${buildHeaders(x["metadata"]["declarations"], x["metadata"]["attributes"])}</td>
-                                    <td>${makePreviewImage(x)}</td>
-                                </tr>`
+                                $("<tr></td>").data("rawkey", x["key"]["raw"]).data("keyidx", x["key"]["key_index"]).append(
+                                    $("<td></td>").append($("<a>💾</a>").attr("href", `/cache-resource?key=${encodeURIComponent(x["key"]["raw"])}&idx=${encodeURIComponent(x["key"]["key_index"])}`)),
+                                    $(`<td style="max-width: 50vw; word-wrap: break-word;"></td>`).text(x["key"]["url"]),
+                                    $("<td></td>").text(x["key"]["site"]),
+                                    $("<td></td>").text(x["metadata"]["request_time"]),
+                                    $("<td></td>").text(x["metadata"]["response_time"]),
+                                    $("<td></td>").text(x["metadata"]["metadata_location"]),
+                                    $("<td></td>").text(x["metadata"]["data_location"]),
+                                    $(`<td style="font-size: 0.7rem; white-space: pre-line; max-width: 50vw; word-wrap: break-word;"></td>`).text(buildHeaders(x["metadata"]["declarations"], x["metadata"]["attributes"])),
+                                    $(`<td>${makePreviewImage(x)}</td>`)
+
+                                )    
                             )
                         );
                     } else{

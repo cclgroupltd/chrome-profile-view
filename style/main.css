@@ -17,6 +17,17 @@ table.standard-table  {
     width: 100%;
     border: 2px double #aaa;
     border-collapse: collapse;
+    margin-bottom: 1.8em;
+}
+
+table.standard-table caption {
+    font-size: 1.1em;
+    font-weight: bold;
+    border: 2px solid #aaa;
+    padding: 0.8rem;
+    background-color: #444;
+    border-collapse: collapse;
+    color: #eee;
 }
 
 table.standard-table tbody tr:nth-child(even){
