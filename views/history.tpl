@@ -11,8 +11,10 @@
                         tablebody.append(
                             data["results"].map(x =>{
                                 x["combined_transition"] = `${x["transition_core"]} (${x["transition_qualifiers"].join(" / ")})`;
-                                x["chain"] = `<a href="/historychain?id=${x["id"]}">⛓️</a>`;
-                                return object2tr(x, addClass=true, "chain", "id", "title", "url", "timestamp", "visit_duration", "combined_transition", "parent_visit_id");
+                                //x["chain"] = `<a href="/historychain?id=${x["id"]}">⛓️</a>`;
+                                let row =  object2tr(x, addClass=true, "id", "title", "url", "timestamp", "visit_duration", "combined_transition", "parent_visit_id");
+                                row.prepend($("<td></td>").append($("<a>⛓️</a>").attr("href", `/historychain?id=${x["id"]}`)));
+                                return row;
                             })
                         );
                     } else{
