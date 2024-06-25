@@ -31,10 +31,11 @@ import ccl_chromium_reader.ccl_chromium_profile_folder
 from ccl_chromium_reader.ccl_chromium_history import HistoryRecord
 from ccl_chromium_reader.ccl_chromium_localstorage import LocalStorageRecord, LocalStorageBatch
 from ccl_chromium_reader.ccl_chromium_sessionstorage import SessionStoreValue
+from ccl_chromium_reader.ccl_chromium_indexeddb import IndexedDbRecord
 from ccl_chromium_reader.ccl_chromium_cache import CacheKey
 from ccl_chromium_reader import ChromiumProfileFolder
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __description__ = "Web app for previewing data in a Chrome Profile Folder"
 __contact__ = "Alex Caithness"
 
@@ -63,6 +64,22 @@ def session_storage_record_to_dict(record: SessionStoreValue):
         "key": record.key,
         "value": record.value if record.value is not None else "",
         "is_deletion_record": record.is_deleted,
+    }
+
+
+def indexeddb_record_to_dict(record: IndexedDbRecord, omit_long_values=True):
+    long_record_threshold = 1 << 15
+    record_str = str(record.value)
+    return {
+        "leveldb_seq_no": record.ldb_seq_no,
+        "db_number": record.db_id,
+        "db_name": record.database_name,
+        "objstore_number": record.obj_store_id,
+        "objstore_name": record.object_store_name,
+        "key": str(record.key),
+        "value": record_str if not omit_long_values or len(record_str) <= long_record_threshold else None,
+        "is_deletion_record": not record.is_live,
+        "is_long_record": len(record_str) > long_record_threshold
     }
 
 
@@ -159,6 +176,118 @@ def api_localstorage_records_route():
         return {"success": False, "error": "No records for this host"}
 
 
+@app.route("/api/indexeddb/hosts")
+def api_indexeddb_hosts_route():
+    return {"success": True, "results": sorted(profile.iter_indexeddb_hosts())}
+
+
+@app.route("/api/indexeddb/databases")
+def api_indexeddb_databases_route():
+    host = bottle.request.query.host
+    result = []
+    try:
+        idb = profile.get_indexeddb(host)
+    except KeyError:
+        return {"success": False, "error": f"could not find host: {host}"}
+
+    for dbid in idb.database_ids:
+        object_stores = []
+        db_info = {"db_number": dbid.dbid_no, "db_name": dbid.name, "object_stores": object_stores}
+        for objstore in idb[dbid]:
+            object_stores.append({
+                "objstore_number": objstore.object_store_id, "objstore_name": objstore.name
+            })
+
+        object_stores.sort(key=lambda x: x["objstore_number"])
+        result.append(db_info)
+
+    result.sort(key=lambda x: x["db_number"])
+
+    return {"success": True, "results": result}
+
+
+@app.route("/api/indexeddb/records")
+def api_indexeddb_records_route():
+    host = bottle.request.query.host
+    db_number = bottle.request.query.db
+    objstore_number = bottle.request.query.objstore
+
+    if host is None or db_number is None or objstore_number is None:
+        return {"success": False, "error": f"missing query parameters"}
+
+    try:
+        idb = profile.get_indexeddb(host)
+    except KeyError:
+        return {"success": False, "error": f"could not find host: {host}"}
+
+    try:
+        db = idb[int(db_number)]
+    except (KeyError, ValueError):
+        return {"success": False, "error": f"could not find db number: {host} / {db_number}"}
+
+    try:
+        obj_store = db[int(objstore_number)]
+    except ValueError:
+        return {"success": False, "error": f"could not find obj store number: {host} / {db.name} / {objstore_number}"}
+
+    results = []
+    error_records = []
+
+    def bad_record_handler(key, value):
+        error_records.append((key, value))
+
+    for record in obj_store.iterate_records(bad_deserializer_data_handler=bad_record_handler):
+        results.append(indexeddb_record_to_dict(record))
+
+    results.sort(key=lambda x: x["leveldb_seq_no"])
+
+    return {
+        "success": True,
+        "results": {"records": results, "db_name": db.name, "objstore_name": obj_store.name},
+        "error_keys": [str(k) for k, v in error_records]
+    }
+
+
+@app.route("/api/indexeddb/single-record")
+def api_indexeddb_single_record_route():
+    host = bottle.request.query.host
+    db_number = bottle.request.query.db
+    objstore_number = bottle.request.query.objstore
+    seq = bottle.request.query.seq
+
+    if host is None or db_number is None or objstore_number is None or seq is None:
+        return {"success": False, "error": f"missing query parameters"}
+
+    try:
+        idb = profile.get_indexeddb(host)
+    except KeyError:
+        return {"success": False, "error": f"could not find host: {host}"}
+
+    try:
+        db = idb[int(db_number)]
+    except (KeyError, ValueError):
+        return {"success": False, "error": f"could not find db number: {host} / {db_number}"}
+
+    try:
+        obj_store = db[int(objstore_number)]
+    except ValueError:
+        return {"success": False, "error": f"could not find obj store number: {host} / {db.name} / {objstore_number}"}
+
+    try:
+        seq = int(seq)
+    except ValueError:
+        return {"success": False, "error": f"seq is not an integer"}
+
+    def bad_record_handler(key, value):
+        pass
+
+    for record in obj_store.iterate_records(bad_deserializer_data_handler=bad_record_handler):
+        if record.ldb_seq_no == seq:
+            return {"success": True, "results": indexeddb_record_to_dict(record, omit_long_values=False)}
+
+    return {"success": False, "error": f"could not find sequence no {seq} in: {host} / {db.name} / {objstore_number}"}
+
+
 @app.route("/api/cache")
 def api_cache_records_route():
     return {
@@ -237,6 +366,44 @@ def localstorage_records_route():
     return {
         "host": bottle.request.query.host,
         "api_endpoint": f"/api/sessionstorage/records?host={bottle.request.query.host}",
+        "profile_path": profile.path.resolve(), "version": __version__
+    }
+
+
+@app.route("/indexeddb")
+@bottle.view("indexeddb")
+def localstorage_route():
+    return {"profile_path": profile.path.resolve(), "version": __version__}
+
+
+@app.route("/indexeddb/databases")
+@bottle.view("indexeddb_databases")
+def localstorage_route():
+    return {
+        "host": bottle.request.query.host,
+        "api_endpoint": f"/api/indexeddb/databases?host={bottle.request.query.host}",
+        "profile_path": profile.path.resolve(), "version": __version__
+    }
+
+
+@app.route("/indexeddb/records")
+@bottle.view("indexeddb_records")
+def indexeddb_records_route():
+    return {
+        "host": bottle.request.query.host,
+        "api_endpoint":
+            f"/api/indexeddb/records?host={bottle.request.query.host}&db={bottle.request.query.db}&objstore={bottle.request.query.objstore}",
+        "profile_path": profile.path.resolve(), "version": __version__
+    }
+
+
+@app.route("/indexeddb/single-record")
+@bottle.view("indexeddb_single_record")
+def indexeddb_single_record_route():
+    return {
+        "host": bottle.request.query.host,
+        "api_endpoint":
+            f"/api/indexeddb/single-record?host={bottle.request.query.host}&db={bottle.request.query.db}&objstore={bottle.request.query.objstore}&seq={bottle.request.query.seq}",
         "profile_path": profile.path.resolve(), "version": __version__
     }
 

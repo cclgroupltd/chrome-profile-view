@@ -3,6 +3,7 @@
         <script>
             % include('localstorage_hosts_script.tpl', selector="#local_storage_host_list")
             % include('sessionstorage_hosts_script.tpl', selector="#session_storage_host_list")
+            % include('indexeddb_hosts_script.tpl', selector="#indexeddb_host_list")
         </script>
         <div id="error_box"></div>
         
@@ -19,6 +20,11 @@
         </ul>
         <h2>Session Storage Hosts</h2>
         <ul id="session_storage_host_list">
+
+        </ul>
+
+        <h2>IndexedDB Hosts</h2>
+        <ul id="indexeddb_host_list">
 
         </ul>
 
