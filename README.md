@@ -14,6 +14,10 @@ soon!):
 * Session Storage
 * IndexedDB
 
+This tool also acts as an example application for our 
+[ccl_chromium_reader](https://github.com/cclgroupltd/ccl_chromium_reader)
+library for accessing data in a Chrom(e|ium) profile folder.
+
 ## Setting up the tool
 The tool requires [Python](https://python.org) 3.10 or above. Once this is 
 installed, download the code from this repository and put it in a folder.
