@@ -8,10 +8,11 @@ feature request, please submit them on the Issues tab in the GitHub repo.
 In the current version the following data types are supported (more coming 
 soon!):
 
-* History (including browsing chains visualization)
+* History (including experimental browsing chains visualization)
 * Cache
 * Local Storage
 * Session Storage
+* IndexedDB
 
 ## Setting up the tool
 The tool requires [Python](https://python.org) 3.10 or above. Once this is 
