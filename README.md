@@ -16,7 +16,7 @@ soon!):
 
 This tool also acts as an example application for our 
 [ccl_chromium_reader](https://github.com/cclgroupltd/ccl_chromium_reader)
-library for accessing data in a Chrom(e|ium) profile folder.
+library for accessing data in a Chrom(e|ium) profile folder. 
 
 ## Setting up the tool
 The tool requires [Python](https://python.org) 3.10 or above. Once this is 
@@ -39,8 +39,8 @@ Line by line this:
 2. Activates the venv
 3. Installs the dependencies listed in the requirements.txt file
 
-The final step is only required once per installation. The first two
-steps are required each time you open a new shell to run the tool.
+The first and final step is only required once per installation. The middle
+step is required each time you open a new shell to run the tool.
 
 ### PowerShell Issues?
 
