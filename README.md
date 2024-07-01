@@ -76,6 +76,10 @@ as a command-line argument, for example, on Windows:
 py chrome-profile-view "c:\Users\you\AppData\Local\Google\Chrome\User Data\Profile 1"
 ```
 
+You can also provide a second argument which is the path to an external
+cache folder if it is not stored directly within the profile folder (such
+as is the case on Android). 
+
 This will launch the local web-service; open a browser and point it to 
 `http://localhost:40539`. Port `40539` is the default port that will be used, 
 but this can be changed in the source code by setting the PORT variable to a 
