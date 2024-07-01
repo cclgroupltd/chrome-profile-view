@@ -35,7 +35,7 @@ from ccl_chromium_reader.ccl_chromium_indexeddb import IndexedDbRecord
 from ccl_chromium_reader.ccl_chromium_cache import CacheKey
 from ccl_chromium_reader import ChromiumProfileFolder
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 __description__ = "Web app for previewing data in a Chrome Profile Folder"
 __contact__ = "Alex Caithness"
 
@@ -516,9 +516,12 @@ def serve_style(filename):
 
 def main(args):
     in_path = pathlib.Path(args[0])
+    external_cache_path = None
+    if len(args) > 1:
+        external_cache_path = pathlib.Path(args[1])
 
     global profile
-    profile = ChromiumProfileFolder(in_path)
+    profile = ChromiumProfileFolder(in_path, cache_folder=external_cache_path)
 
     launch_message = f"Point your browser to http://localhost:{PORT}"
     print()
@@ -533,7 +536,7 @@ def main(args):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print()
-        print(f"USAGE {pathlib.Path(sys.argv[0])} <profile folder>")
+        print(f"USAGE {pathlib.Path(sys.argv[0])} <profile folder> [optional cache folder if not in profile folder]")
         print()
         exit(1)
     main(sys.argv[1:])
