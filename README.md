@@ -18,6 +18,15 @@ This tool also acts as an example application for our
 [ccl_chromium_reader](https://github.com/cclgroupltd/ccl_chromium_reader)
 library for accessing data in a Chrom(e|ium) profile folder. 
 
+## Screenshots
+![Front page in v0.0.6](https://github.com/cclgroupltd/chrome-profile-view/assets/13645548/e91cba8a-a52f-4354-840f-f52381ec551e)
+
+![History chain view in v0.0.6](https://github.com/cclgroupltd/chrome-profile-view/assets/13645548/eba94b30-26f5-49bd-a91c-10d3b8e5a8d8)
+
+![Session Storage in v0.0.6](https://github.com/cclgroupltd/chrome-profile-view/assets/13645548/9d983911-0295-45ea-a0cd-3c9475893f71)
+
+
+
 ## Setting up the tool
 The tool requires [Python](https://python.org) 3.10 or above. Once this is 
 installed, download the code from this repository and put it in a folder.
