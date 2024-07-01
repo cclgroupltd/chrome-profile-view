@@ -35,7 +35,7 @@ from ccl_chromium_reader.ccl_chromium_indexeddb import IndexedDbRecord
 from ccl_chromium_reader.ccl_chromium_cache import CacheKey
 from ccl_chromium_reader import ChromiumProfileFolder
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 __description__ = "Web app for previewing data in a Chrome Profile Folder"
 __contact__ = "Alex Caithness"
 
@@ -46,7 +46,7 @@ profile: typing.Optional[ChromiumProfileFolder] = None
 
 
 def local_storage_record_to_dict(record: LocalStorageRecord, batch: LocalStorageBatch):
-    batch_ts = batch.timestamp if batch.timestamp is not None else ""
+    batch_ts = batch.timestamp if batch is not None else ""
     return {
         "leveldb_seq_no": record.leveldb_seq_number,
         "storage_key": record.storage_key,
